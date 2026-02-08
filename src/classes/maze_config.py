@@ -25,7 +25,7 @@ class MazeConfig:
         self.output_file_name = output_file
         self.maze_perfect = perfect
 
-    def get_info(self):
+    def get_info(self) -> str:
         return str(self.__dict__)
 
     @classmethod
@@ -38,7 +38,7 @@ class MazeConfig:
         config_candidates.append(default_path.resolve())
 
         for path in config_candidates:
-            print(f"Loadin configuration file: {path}")
+            # print(f"Loadin configuration file: {path}") # delete on release
             if not cls._check_file_exist(path):
                 print(f"Error: File {path} not found")
                 continue
@@ -49,10 +49,10 @@ class MazeConfig:
                 continue
 
             if cls._config_verify(raw_data):
-                print(f"Configurations was successfully loaded from '{path}'")
+                # print(f"Configurations was successfully loaded from '{path}'") # delete on release
                 return cls(**raw_data)
             else:
-                print(f"Data validation error: file '{path}'"
+                print(f"Data validation error: file '{path}'\n"
                       f"contain corrupted data.")
 
         print("CRITICAL ERROR: Cannot load any configuration files!")
