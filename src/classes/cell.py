@@ -5,7 +5,7 @@ class Cell:
     def __init__(self, cell_x: int, cell_y: int) -> None:
         self.cell_x = cell_x
         self.cell_y = cell_y
-        self.passage = {
+        self.paths = {
             "north": True,
             "east": True,
             "south": True,
@@ -20,5 +20,5 @@ class Cell:
         return str(self.__dict__)
 
     def set_path(self, direction: str, is_path: bool) -> None:
-        if direction in self.passage:
-            self.passage[direction] = is_path
+        if direction in self.paths:
+            self.paths[direction] = is_path
