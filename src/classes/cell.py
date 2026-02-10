@@ -1,6 +1,3 @@
-from typing import Dict
-
-
 class Cell:
     def __init__(self, cell_x: int, cell_y: int) -> None:
         self.cell_x = cell_x
