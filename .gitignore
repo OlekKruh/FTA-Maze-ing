@@ -4,3 +4,4 @@
 # Derectoris
 .venv/
 .idea/
+.src/classes/__pycache__/

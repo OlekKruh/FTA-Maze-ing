@@ -2,6 +2,7 @@ from .maze_config import MazeConfig
 from .cell import Cell
 from .grid import Grid
 from .menu import Menu
+from .graphics import Graphics
 
 
 __all__ = [
@@ -9,4 +10,5 @@ __all__ = [
     "Cell",
     "Grid",
     "Menu",
+    "Graphics",
 ]
