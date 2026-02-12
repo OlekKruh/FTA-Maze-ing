@@ -11,7 +11,7 @@ class Menu:
 
     def get_user_choice(self) -> int:
         while True:
-            choice = input("Choose command: ").strip()
+            choice = input("Choose command: ").strip() # проблема с выводом остального инпут глушит все напричь
 
             if choice.isdigit():
                 cmd = int(choice)

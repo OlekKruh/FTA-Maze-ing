@@ -1,3 +1,5 @@
+import time
+
 from . import Grid, Cell, Menu, Graphics
 import sys
 
@@ -46,8 +48,8 @@ class Renderer:
         sys.stdout.write(f"\033[{y};{x}H")
 
     def draw_cell(self, cell: Cell) -> None:
-        screen_y = cell.y + 1
-        screen_x = cell.x + 1
+        screen_y = cell.cell_y + 1
+        screen_x = cell.cell_x + 1
 
         char = self.gfx.get_char_for_cell(cell)
         color = self.gfx.get_color_for_cell(cell)
@@ -68,18 +70,30 @@ class Renderer:
         self.restore_cursore()
         sys.stdout.flush()
 
-    def render_all(self, grid: Grid, menu_lines: list):
+    def render_all(self, grid: Grid):
         self.clear_screen()
         self.restore_cursore()
 
+        menu_list = [
+            self.menu.get_title_text(),
+            self.menu.get_generate_btn_text(),
+            self.menu.get_path_btn_text(False),
+            self.menu.get_char_style_btn_text(self.gfx.current_style_name),
+            self.menu.get_color_style_btn_text(self.gfx.current_theme_name),
+            self.menu.get_exit_btn_text(),
+
+        ]
+
         for row in grid.matrix:
             for cell in row:
+                # time.sleep(0.05)
                 self.draw_cell(cell)
 
         self._move_cursor(1, grid.grid_height + 1)
-        print("=" * grid.grid_width)
+        print(" " * grid.grid_width)
 
-        for i, line in enumerate(menu_lines):
+        for i, line in enumerate(menu_list):
+            # time.sleep(0.5)
             self.update_menu_line(line, grid.grid_height, i)
 
         self.show_cursor()

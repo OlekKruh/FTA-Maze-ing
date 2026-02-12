@@ -1,5 +1,5 @@
 from typing import List
-from .cell import Cell
+from . import Cell
 
 
 class Graphics:
@@ -105,8 +105,11 @@ class Graphics:
         self._style_idx = 0
         self._theme_idx = 0
 
-        self.current_char_map = self.SYMBOLS_STYLES[self._style_keys[self._style_idx]]
-        self.current_theme_map = self.COLORS_STYLES[self._theme_keys[self._theme_idx]]
+        self.current_style_name = self._style_keys[self._style_idx]
+        self.current_theme_name = self._theme_keys[self._theme_idx]
+
+        self.current_char_map = self.SYMBOLS_STYLES[self.current_style_name]
+        self.current_theme_map = self.COLORS_STYLES[self.current_theme_name]
 
     def toggle_style(self) -> None:
         self._style_idx = (self._style_idx + 1) % len(self._style_keys)
