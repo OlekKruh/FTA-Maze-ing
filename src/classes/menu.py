@@ -1,3 +1,6 @@
+from typing import Optional
+
+
 class Menu:
     CMD_GENERATE_NEW = 1
     CMD_SHOW_PATH = 2
@@ -9,15 +12,19 @@ class Menu:
         self.title = "=== A-MAZE-ING GENERATOR ==="
         self.menu_list = []
 
-    def get_user_choice(self) -> int:
+
+    def get_user_choice(self) -> Optional[int, str]:
         while True:
-            choice = input("Choose command: ").strip() # проблема с выводом остального инпут глушит все напричь
+            choice = input("").strip() # глушит stdout.write если добавить в список для вывода
 
             if choice.isdigit():
                 cmd = int(choice)
                 if 1 <= cmd <= 5:
                     return cmd
-            self._show_error("Unknown command! Please select command from the list.")
+            return str(choice)
+
+    def get_choice(self) -> str:
+        return "Choose command: "
 
     def get_title_text(self) -> str:
         return f"{self.title}"
@@ -30,10 +37,10 @@ class Menu:
         return f"[{self.CMD_SHOW_PATH}] {path_action} path"
 
     def get_char_style_btn_text(self, char_style: str) -> str:
-        return f"[{self.CMD_CHAR_STYLE}] Change characters style. Now: {char_style})"
+        return f"[{self.CMD_CHAR_STYLE}] Change characters style. Now: ({char_style})"
 
     def get_color_style_btn_text(self, color_style: str) -> str:
-        return f"[{self.CMD_CHANGE_COLORS}] Change color style. Now: {color_style})"
+        return f"[{self.CMD_CHANGE_COLORS}] Change color style. Now: ({color_style})"
 
     def get_exit_btn_text(self) -> str:
         return f"[{self.CMD_EXIT}] Quit program"

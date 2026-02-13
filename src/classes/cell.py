@@ -12,7 +12,6 @@ class Cell:
         self.is_exit = False
         self.visited = False
         self.forbidden = False
-        # self.color = "\033[0m"
 
     def get_info(self) -> str:
         return str(self.__dict__)
