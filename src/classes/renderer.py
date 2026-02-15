@@ -36,12 +36,12 @@ class Renderer:
 
     @staticmethod
     def save_cursor() -> None:
-        sys.stdout.write("\033[s")
+        sys.stdout.write("\0337")
         sys.stdout.flush()
 
     @staticmethod
     def restore_cursor() -> None:
-        sys.stdout.write("\033[u")
+        sys.stdout.write("\0338")
         sys.stdout.flush()
 
     @staticmethod
@@ -80,36 +80,43 @@ class Renderer:
         color = self.gfx.get_color_for_cell(cell)
         reset = self.gfx.current_theme_map["RESET"]
 
-        self.save_cursor()
+        # self.save_cursor()
         self.move_cursor(screen_x, screen_y)
         sys.stdout.write(f"{color}{char}{reset}")
-        self.restore_cursor()
+        # self.restore_cursor()
         sys.stdout.flush()
         time.sleep(delay) # снять коментарий на релизе
 
-    def update_menu_line(self, text: str, maze_height: int, line_index: int) -> None:
+    def redraw_grid(self, grid: Grid) -> None:
+        self.hide_cursor()
+        for row in grid.matrix:
+            for cell in row:
+                self.draw_cell(cell, delay=0)
+        self.show_cursor()
+
+    def update_menu_line(self, maze_height: int, line_index: int) -> None:
         current_y = maze_height + 2 + line_index
 
-        self.save_cursor()
+        menu_list = self.menu.get_current_list(
+            path_visible=self.gfx.show_path,
+            char_style=self.gfx.current_style_name,
+            color_style=self.gfx.current_theme_name
+        )
+        text = menu_list[line_index]
         self.move_cursor(1, current_y)
         sys.stdout.write(f"\033[K")
-        self.type_text(text)
-        self.restore_cursor()
+        self.type_text(text,0)
         sys.stdout.flush()
 
-    def render_all(self, grid: Grid, is_is_path_visible: bool):
+    def render_all(self, grid: Grid):
         self.clear_screen()
-        self.restore_cursor()
+        # self.restore_cursor()
 
-        menu_list = [
-            self.menu.get_title_text(),
-            self.menu.get_generate_btn_text(),
-            self.menu.get_path_btn_text(is_is_path_visible),
-            self.menu.get_char_style_btn_text(self.gfx.current_style_name),
-            self.menu.get_color_style_btn_text(self.gfx.current_theme_name),
-            self.menu.get_exit_btn_text(),
-            self.menu.get_choice(),
-        ]
+        menu_list = self.menu.get_current_list(
+            path_visible=self.gfx.show_path,
+            char_style=self.gfx.current_style_name,
+            color_style=self.gfx.current_theme_name
+        )
 
         for row in grid.matrix:
             for cell in row:
@@ -118,8 +125,7 @@ class Renderer:
         self.move_cursor(1, grid.grid_height + 1)
         print(" " * grid.grid_width)
 
-        for i, line in enumerate(menu_list):
-            self.update_menu_line(line, grid.grid_height, i)
-        # print(" " * grid.grid_width)
+        for i in range(len(menu_list)):
+            self.update_menu_line(grid.grid_height, i)
 
         self.show_cursor()

@@ -3,15 +3,16 @@ class Cell:
         self.cell_x = cell_x
         self.cell_y = cell_y
         self.paths = {
-            "north": True,
-            "east": True,
-            "south": True,
-            "west": True,
+            "north": False,
+            "east": False,
+            "south": False,
+            "west": False,
         }
-        self.is_start = False
-        self.is_exit = False
-        self.visited = False
-        self.forbidden = False
+        self.is_start = False # условие определения
+        self.is_exit = False # условие определения
+        self.visited = False # условие определения
+        self.forbidden = False # условие определения
+        self.is_solution = False # условие определения
 
     def get_info(self) -> str:
         return str(self.__dict__)

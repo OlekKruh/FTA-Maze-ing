@@ -29,7 +29,7 @@ class MazeConfig:
         return str(self.__dict__)
 
     @classmethod
-    def load_config(cls, user_file_name: Optional[Path] = None) -> MazeConfig:
+    def load_config(cls, user_file_name: Optional[Path] = None) -> "MazeConfig":
         config_candidates = []
         if user_file_name:
             config_candidates.append(user_file_name)

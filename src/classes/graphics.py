@@ -14,7 +14,7 @@ class Graphics:
             (True, False, True, False): "║",
             (False, True, False, True): "═",
 
-            (False, False, False, False): "◯",
+            (False, False, False, False): "░",
             (True, True, True, True): "╬",
 
             (False, False, True, True): "╗",
@@ -36,7 +36,7 @@ class Graphics:
             (True, False, True, False): "|",
             (False, True, False, True): "-",
 
-            (False, False, False, False): "#",
+            (False, False, False, False): "?",
             (True, True, True, True): "+",
 
             (False, False, True, True): "7",
@@ -105,6 +105,8 @@ class Graphics:
         self._style_idx = 0
         self._theme_idx = 0
 
+        self.show_path = False
+
         self.current_style_name = self._style_keys[self._style_idx]
         self.current_theme_name = self._theme_keys[self._theme_idx]
 
@@ -113,10 +115,12 @@ class Graphics:
 
     def toggle_style(self) -> None:
         self._style_idx = (self._style_idx + 1) % len(self._style_keys)
+        self.current_style_name = self._style_keys[self._style_idx]
         self.current_char_map = self.SYMBOLS_STYLES[self._style_keys[self._style_idx]]
 
     def toggle_theme(self) -> None:
         self._theme_idx = (self._theme_idx + 1) % len(self._theme_keys)
+        self.current_theme_name = self._theme_keys[self._theme_idx]
         self.current_theme_map = self.COLORS_STYLES[self._theme_keys[self._theme_idx]]
 
     def get_char_for_cell(self, cell: Cell) -> str:
@@ -130,13 +134,10 @@ class Graphics:
 
     def get_color_for_cell(self, cell: Cell, solution: List[Cell] = None) -> str:
         theme = self.current_theme_map
-        if cell.is_start:
-            return theme["START"]
-        elif cell.is_exit:
-            return theme["END"]
-        elif solution and cell in solution:
+        if cell.is_start: return theme["START"]
+        if cell.is_exit: return theme["END"]
+        if cell.is_solution and self.show_path:
             return theme["PATH"]
-        elif cell.forbidden:
-            return theme["RESET"]
-        else:
-            return theme["WALL"]
+        if cell.forbidden:return theme["RESET"]
+
+        return theme["WALL"]

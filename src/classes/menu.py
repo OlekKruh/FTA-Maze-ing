@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 
 class Menu:
@@ -12,10 +12,10 @@ class Menu:
         self.title = "=== A-MAZE-ING GENERATOR ==="
         self.menu_list = []
 
-
-    def get_user_choice(self) -> Optional[int, str]:
+    @staticmethod
+    def get_user_choice() -> Optional[int, str]:
         while True:
-            choice = input("").strip() # глушит stdout.write если добавить в список для вывода
+            choice = input("").strip()
 
             if choice.isdigit():
                 cmd = int(choice)
@@ -23,7 +23,8 @@ class Menu:
                     return cmd
             return str(choice)
 
-    def get_choice(self) -> str:
+    @staticmethod
+    def get_choice() -> str:
         return "Choose command: "
 
     def get_title_text(self) -> str:
@@ -44,6 +45,21 @@ class Menu:
 
     def get_exit_btn_text(self) -> str:
         return f"[{self.CMD_EXIT}] Quit program"
+
+    def get_current_list(self,
+                         path_visible: bool,
+                         char_style: str,
+                         color_style: str) -> List[str]:
+        self.menu_list = [
+            self.get_title_text(),
+            self.get_generate_btn_text(),
+            self.get_path_btn_text(path_visible),
+            self.get_char_style_btn_text(char_style),
+            self.get_color_style_btn_text(color_style),
+            self.get_exit_btn_text(),
+            self.get_choice()
+        ]
+        return self.menu_list
 
     @staticmethod
     def _show_error(message: str) -> None:

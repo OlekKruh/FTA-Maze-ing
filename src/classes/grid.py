@@ -1,16 +1,22 @@
-from .cell import Cell
+from . import Cell, MazeConfig
 from typing import List
 
 class Grid:
     matrix = []
 
-    def __init__(self, grid_width: int, grid_height: int) -> None:
-        self.grid_width = grid_width
-        self.grid_height = grid_height
+    def __init__(self, config: MazeConfig) -> None:
+        self.grid_width = config.maze_width
+        self.grid_height = config.maze_height
         self.matrix = [
             [Cell(x, y) for x in range(self.grid_width)]
             for y in range(self.grid_height)
         ]
+        start_x, start_y = config.maze_entry
+        exit_x, exit_y = config.maze_exit
+
+        # Назначаем свойства напрямую
+        self.matrix[start_y][start_x].is_start = True
+        self.matrix[exit_y][exit_x].is_exit = True
 
     def __getitem__(self, item: tuple[int, int]) -> Cell:
         """
