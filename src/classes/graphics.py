@@ -1,4 +1,3 @@
-from typing import List
 from . import Cell
 
 
@@ -116,12 +115,14 @@ class Graphics:
     def toggle_style(self) -> None:
         self._style_idx = (self._style_idx + 1) % len(self._style_keys)
         self.current_style_name = self._style_keys[self._style_idx]
-        self.current_char_map = self.SYMBOLS_STYLES[self._style_keys[self._style_idx]]
+        self.current_char_map = self.SYMBOLS_STYLES[
+            self._style_keys[self._style_idx]]
 
     def toggle_theme(self) -> None:
         self._theme_idx = (self._theme_idx + 1) % len(self._theme_keys)
         self.current_theme_name = self._theme_keys[self._theme_idx]
-        self.current_theme_map = self.COLORS_STYLES[self._theme_keys[self._theme_idx]]
+        self.current_theme_map = self.COLORS_STYLES[
+            self._theme_keys[self._theme_idx]]
 
     def get_char_for_cell(self, cell: Cell) -> str:
         mask = (
@@ -132,12 +133,15 @@ class Graphics:
         )
         return self.current_char_map.get(mask, "@")
 
-    def get_color_for_cell(self, cell: Cell, solution: List[Cell] = None) -> str:
+    def get_color_for_cell(self, cell: Cell) -> str:
         theme = self.current_theme_map
-        if cell.is_start: return theme["START"]
-        if cell.is_exit: return theme["END"]
+        if cell.is_start:
+            return theme["START"]
+        if cell.is_exit:
+            return theme["END"]
         if cell.is_solution and self.show_path:
             return theme["PATH"]
-        if cell.forbidden:return theme["RESET"]
+        if cell.forbidden:
+            return theme["RESET"]
 
         return theme["WALL"]

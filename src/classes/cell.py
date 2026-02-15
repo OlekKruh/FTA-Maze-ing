@@ -8,11 +8,11 @@ class Cell:
             "south": False,
             "west": False,
         }
-        self.is_start = False # условие определения
-        self.is_exit = False # условие определения
-        self.visited = False # условие определения
-        self.forbidden = False # условие определения
-        self.is_solution = False # условие определения
+        self.is_start = False  # условие определения
+        self.is_exit = False  # условие определения
+        self.visited = False  # условие определения
+        self.forbidden = False  # условие определения
+        self.is_solution = False  # условие определения
 
     def get_info(self) -> str:
         return str(self.__dict__)

@@ -1,6 +1,7 @@
 from . import Cell, MazeConfig
 from typing import List
 
+
 class Grid:
     matrix = []
 
@@ -33,12 +34,12 @@ class Grid:
         return (f"Grid = {self.grid_width}x{self.grid_height}\n"
                 f"Cells = {self.grid_width * self.grid_height}")
 
-    def display(self):
-        """
-        Метод специально для быстрой проверки структуры в консоли
-        """
-        for row in self.matrix:
-            print(" ".join([f"[ ]" for _ in row]))
+    # def display(self):
+    #     """
+    #     Метод специально для быстрой проверки структуры в консоли
+    #     """
+    #     for row in self.matrix:
+    #         print(" ".join([f"[ ]" for _ in row]))
 
     def get_neighbors(self, item: tuple[int, int]) -> List[Cell]:
         x, y = item

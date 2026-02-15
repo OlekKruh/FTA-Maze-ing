@@ -55,12 +55,12 @@ class Renderer:
 
     @staticmethod
     def type_text(text: str,
-                   min_delay: float = 0.04,
-                   max_delay: float = 0.09) -> None:
+                  min_delay: float = 0.04,
+                  max_delay: float = 0.09) -> None:
         for char in text:
             sys.stdout.write(char)
             sys.stdout.flush()
-            time.sleep(random.uniform(min_delay, max_delay)) # снять коментарий на релизе
+            time.sleep(random.uniform(min_delay, max_delay))
 
     @staticmethod
     def backspace(count: int,
@@ -69,7 +69,7 @@ class Renderer:
         for _ in range(count):
             sys.stdout.write("\b \b")
             sys.stdout.flush()
-            time.sleep(random.uniform(min_delay, max_delay))  # снять коментарий на релизе
+            time.sleep(random.uniform(min_delay, max_delay))
 
     def draw_cell(self, cell: Cell,
                   delay: float = 0.02) -> None:
@@ -80,12 +80,10 @@ class Renderer:
         color = self.gfx.get_color_for_cell(cell)
         reset = self.gfx.current_theme_map["RESET"]
 
-        # self.save_cursor()
         self.move_cursor(screen_x, screen_y)
         sys.stdout.write(f"{color}{char}{reset}")
-        # self.restore_cursor()
         sys.stdout.flush()
-        time.sleep(delay) # снять коментарий на релизе
+        time.sleep(delay)
 
     def redraw_grid(self, grid: Grid) -> None:
         self.hide_cursor()
@@ -104,13 +102,12 @@ class Renderer:
         )
         text = menu_list[line_index]
         self.move_cursor(1, current_y)
-        sys.stdout.write(f"\033[K")
-        self.type_text(text,0)
+        sys.stdout.write("\033[K")
+        self.type_text(text, 0)
         sys.stdout.flush()
 
     def render_all(self, grid: Grid):
         self.clear_screen()
-        # self.restore_cursor()
 
         menu_list = self.menu.get_current_list(
             path_visible=self.gfx.show_path,

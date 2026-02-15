@@ -1,5 +1,4 @@
 from typing import Optional
-
 from . import MazeConfig, Grid, Graphics, Menu, Renderer
 import sys
 import time
@@ -72,7 +71,7 @@ class Manager:
         full_massage = f">>> STUB: {message}"
 
         self.renderer.move_cursor(1, msg_y)
-        sys.stdout.write(f"\033[K")
+        sys.stdout.write("\033[K")
         self.renderer.type_text(full_massage)
         sys.stdout.flush()
 

@@ -38,10 +38,12 @@ class Menu:
         return f"[{self.CMD_SHOW_PATH}] {path_action} path"
 
     def get_char_style_btn_text(self, char_style: str) -> str:
-        return f"[{self.CMD_CHAR_STYLE}] Change characters style. Now: ({char_style})"
+        return (f"[{self.CMD_CHAR_STYLE}] Change characters style. "
+                f"Now: ({char_style})")
 
     def get_color_style_btn_text(self, color_style: str) -> str:
-        return f"[{self.CMD_CHANGE_COLORS}] Change color style. Now: ({color_style})"
+        return (f"[{self.CMD_CHANGE_COLORS}] Change color style. "
+                f"Now: ({color_style})")
 
     def get_exit_btn_text(self) -> str:
         return f"[{self.CMD_EXIT}] Quit program"
