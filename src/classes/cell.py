@@ -8,11 +8,12 @@ class Cell:
             "south": False,
             "west": False,
         }
-        self.is_start = False  # условие определения
-        self.is_exit = False  # условие определения
-        self.visited = False  # условие определения
-        self.forbidden = False  # условие определения
-        self.is_solution = False  # условие определения
+        self.is_start: bool = False
+        self.is_exit: bool = False
+        self.visited: bool = False
+        self.forbidden: bool = False
+        self.is_solution: bool = False
+        self.vector: str | None = None
 
     def get_info(self) -> str:
         return str(self.__dict__)

@@ -1,4 +1,7 @@
-from . import Grid, Cell, Menu, Graphics
+from .grid import Grid
+from .cell import Cell
+from .menu import Menu
+from .graphics import Graphics
 import random
 import time
 import sys
@@ -89,7 +92,7 @@ class Renderer:
         self.hide_cursor()
         for row in grid.matrix:
             for cell in row:
-                self.draw_cell(cell, delay=0)
+                self.draw_cell(cell, 0)
         self.show_cursor()
 
     def update_menu_line(self, maze_height: int, line_index: int) -> None:
@@ -103,7 +106,7 @@ class Renderer:
         text = menu_list[line_index]
         self.move_cursor(1, current_y)
         sys.stdout.write("\033[K")
-        self.type_text(text, 0)
+        self.type_text(text, 0, 0)
         sys.stdout.flush()
 
     def render_all(self, grid: Grid):

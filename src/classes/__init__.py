@@ -5,7 +5,7 @@ from .menu import Menu
 from .graphics import Graphics
 from .renderer import Renderer
 from .manager import Manager
-
+from .builder import OriginShift
 
 __all__ = [
     "MazeConfig",
@@ -14,5 +14,6 @@ __all__ = [
     "Menu",
     "Graphics",
     "Renderer",
-    "Manager"
+    "Manager",
+    "OriginShift"
 ]

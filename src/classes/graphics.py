@@ -1,4 +1,4 @@
-from . import Cell
+from .cell import Cell
 
 
 class Graphics:

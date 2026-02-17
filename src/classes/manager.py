@@ -1,5 +1,10 @@
 from typing import Optional
-from . import MazeConfig, Grid, Graphics, Menu, Renderer
+from .maze_config import MazeConfig
+from .grid import Grid
+from .graphics import Graphics
+from .menu import Menu
+from .renderer import Renderer
+from .builder import OriginShift
 import sys
 import time
 
@@ -11,6 +16,7 @@ class Manager:
         self.gfx = Graphics()
         self.menu = Menu()
         self.renderer = Renderer(self.gfx, self.menu)
+        self.builder = OriginShift(self.grid)
         self.is_path_visible = False
 
     def run(self):
@@ -26,10 +32,10 @@ class Manager:
                     self._handle_exit()
 
                 case self.menu.CMD_GENERATE_NEW:
-                    self.update_menu_line(command)
+                    self._handle_generate(command)
 
                 case self.menu.CMD_SHOW_PATH:
-                    self.update_menu_line(command)
+                    self._handle_unknown(command)  # другой метод
 
                 case self.menu.CMD_CHAR_STYLE:
                     self.gfx.toggle_style()
@@ -40,16 +46,32 @@ class Manager:
                     self.update_menu_line(command)
 
                 case _:
-                    self.update_menu_line(command)
+                    self._handle_unknown(command)
 
     def _handle_exit(self):
+        self._stub_action("Hasta la vista, baby.", 5)
         self.renderer.clear_screen()
-        print("[SYSTEM]: Hasta la vista, baby.")
         sys.exit(0)
 
     def _handle_generate(self, command):
-        self._stub_action("Запуск алгоритма генерации...", command)
-        # self.builder.run() ...
+        prompt_len = len(self.menu.get_choice()) + command
+        sys.stdout.write(f"\033[A\033[G\033[{prompt_len}C")
+        self.renderer.backspace(command)
+
+        self.builder.init_vectors()
+        self.renderer.redraw_grid(self.grid)
+        self.renderer.save_cursor()
+
+        total_cells = self.grid.grid_width * self.grid.grid_height
+        iterations = total_cells * 10
+
+        for i in range(iterations):
+            changed_cells = self.builder.step()
+
+            for cell in changed_cells:
+                self.renderer.draw_cell(cell, delay=0.01)
+
+        self.renderer.restore_cursor()
 
     def _handle_unknown(self, command):
         self._stub_action("Unknown command", command)
@@ -67,19 +89,17 @@ class Manager:
     def _stub_action(self, message: str, command: Optional[int, str]):
         command = 1 if isinstance(command, int) else len(command)
 
-        msg_y = self.grid.grid_height + 9
-        full_massage = f">>> STUB: {message}"
+        msg_y = self.grid.grid_height + len(self.menu.menu_list) + 2
+        full_massage = f">>> {message}"
 
         self.renderer.move_cursor(1, msg_y)
         sys.stdout.write("\033[K")
         self.renderer.type_text(full_massage)
         sys.stdout.flush()
 
-        time.sleep(3)  # Даем прочитать
+        time.sleep(3)
 
-        # Стираем сообщение
         self.renderer.backspace(len(full_massage))
-        # стираем комманду
         outset = len(self.menu.get_choice()) + 1 + command
         self.renderer.move_cursor(outset, msg_y - 1)
         self.renderer.backspace(command)
