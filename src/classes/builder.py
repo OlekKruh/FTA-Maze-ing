@@ -1,12 +1,23 @@
-from .grid import Grid
 import random
-import time
+from abc import ABC, abstractmethod
+from typing import List
+
+from .grid import Grid
+from .cell import Cell
 
 
-class OriginShift:
+class BaseBuilder(ABC):
+    """
+    Abstract base class for all maze generation algorithms.
+    Ensures that each generator has setup() and step() methods.
+    """
+
+    # Algorithm name for display in the UI and Registry (overridden in descendants)
+    name: str = "base_builder"
+
     def __init__(self, grid: Grid) -> None:
         self.grid = grid
-        self.origin = None
+        # General direction dictionaries are now in the database
         self.deltas = {
             "north": (0, -1),
             "south": (0, 1),
@@ -20,30 +31,177 @@ class OriginShift:
             "west": "east"
         }
 
-    def init_vectors(self):
+    @abstractmethod
+    def setup(self) -> None:
+        """
+        Prepares the grid for generation (cleaning, setting starting points).
+        Must be implemented in every derived class.
+        """
+        ...
+
+    @abstractmethod
+    def step(self) -> List[Cell]:
+        """
+        Executes one iteration of the algorithm.
+        Returns a list of cells that have visually changed.
+        Must be implemented in every derived class.
+        """
+        ...
+
+
+class DFSBuilder(BaseBuilder):
+    """Maze generator based on Depth-First Search (Recursive Backtracker).
+
+    Creates a maze by carving a random path and backtracking when reaching
+    a dead end. Adapted for step-by-step execution to provide smooth
+    terminal animation.
+
+    Attributes:
+        stack (List[tuple[int, int]]): A stack of (x, y) coordinates tracking
+            the current path. Used for backtracking from dead ends.
+    """
+
+    name = "dfs_backtracker"
+
+    def __init__(self, grid: Grid) -> None:
+        """Initializes the DFS generator.
+
+        Args:
+            grid (Grid): The grid object on which the maze will be built.
+        """
+        super().__init__(grid)
+        self.stack: List[tuple[int, int]] = []
+
+    def setup(self) -> None:
+        """Prepares the grid for generation.
+
+        Clears all passages, resets visited flags and vectors.
+        Finds the starting cell using the 'is_start' flag and pushes it
+        onto the stack.
+        """
+        start_cell = None
+
+        # Clear the grid and simultaneously look for the starting cell
+        for row in self.grid.matrix:
+            for cell in row:
+                if not cell.forbidden:
+                    cell.visited = False
+                    cell.vector = None
+                    cell.is_solution = False
+                    for k in cell.paths:
+                        cell.paths[k] = False
+
+                # Identify the cell marked as start by the Grid
+                if cell.is_start:
+                    start_cell = cell
+
+        # Initialize the stack with the starting point
+        if start_cell:
+            start_cell.visited = True
+            self.stack = [(start_cell.cell_x, start_cell.cell_y)]
+
+    def step(self) -> List[Cell]:
+        """Performs a single iteration of the DFS algorithm..."""
+        if not self.stack:
+            return []
+
+        x, y = self.stack[-1]
+        current_cell = self.grid.matrix[y][x]
+
+        # Ищем непосещенных соседей
+        neighbors = []
+        for direction, (dx, dy) in self.deltas.items():
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < self.grid.grid_width and 0 <= ny < self.grid.grid_height:
+                ncell = self.grid.matrix[ny][nx]
+                # Сосед должен быть не запрещенным (не маска) и не посещенным
+                if not ncell.forbidden and not ncell.visited:
+                    neighbors.append((nx, ny, direction))
+
+        # Тупик — откат (backtrack) или... ШАЛОСТЬ!
+        if not neighbors:
+            updates = [current_cell]  # Начинаем собирать клетки для перерисовки экрана
+
+            # --- НАЧАЛО ХУЛИГАНСТВА ---
+            # Проверяем, разрешил ли конфиг делать неидеальный лабиринт
+            if hasattr(self.grid, 'perfection') and not self.grid.perfection:
+                # С вероятностью 10% крот решает пробить стену к уже посещенному соседу
+                if random.random() < 0.10:
+                    visited_neighbors = []
+                    for d, (dx, dy) in self.deltas.items():
+                        nx, ny = x + dx, y + dy
+                        if 0 <= nx < self.grid.grid_width and 0 <= ny < self.grid.grid_height:
+                            ncell = self.grid.matrix[ny][nx]
+                            # Ищем соседа, который уже выкопан (visited), не стена-маска,
+                            # и к которому ЕЩЕ НЕТ прохода
+                            if (ncell.visited and not ncell.forbidden
+                                    and not current_cell.paths[d]):
+                                visited_neighbors.append((ncell, d))
+
+                    if visited_neighbors:
+                        target_cell, direction = random.choice(visited_neighbors)
+                        # Пробиваем стену, создавая петлю!
+                        current_cell.paths[direction] = True
+                        target_cell.paths[self.opposites[direction]] = True
+
+                        # ВОТ ОНО ИСПРАВЛЕНИЕ: говорим рендереру перерисовать и соседа тоже!
+                        updates.append(target_cell)
+                        # --- КОНЕЦ ХУЛИГАНСТВА ---
+
+            self.stack.pop()
+            # Добавляем новую верхушку стека (куда мы откатились)
+            if self.stack:
+                px, py = self.stack[-1]
+                updates.append(self.grid.matrix[py][px])
+
+            return updates
+
+        # Если есть куда идти — шагаем в новую клетку
+        nx, ny, direction = random.choice(neighbors)
+        next_cell = self.grid.matrix[ny][nx]
+
+        # Ломаем стены между текущей и следующей клеткой
+        current_cell.paths[direction] = True
+        next_cell.paths[self.opposites[direction]] = True
+        next_cell.visited = True
+
+        self.stack.append((nx, ny))
+
+        return [current_cell, next_cell]
+
+
+class OriginShift(BaseBuilder):
+    """
+    Оригинальный генератор на основе сдвига стока (вариация Aldous-Broder / Wilson).
+    """
+    name = "origin_shift"
+
+    def __init__(self, grid: Grid) -> None:
+        super().__init__(grid)
+        self.origin = None
+
+    def setup(self) -> None:
         w, h = self.grid.grid_width, self.grid.grid_height
 
         for row in self.grid.matrix:
             for cell in row:
                 cell.paths = {k: False for k in cell.paths}
                 cell.vector = None
+                cell.is_solution = False
 
         sx = (w - 7) // 2
         sy = (h - 5) // 2
+
+        # Пасхалка "42"
         overrides = {
-            # Внутри "4" (чаша) -> Вверх
             (1, 0): "north", (1, 1): "north",
-            # Разрыв между "4" и "2" -> Вниз (Коллектор)
-            (3, 0): "south", (3, 1): "south", (3, 2): "south", (3, 3): "south", (3, 4): "south",
-            # Внутри "2" -> Влево
+            (3, 0): "south", (3, 1): "south",
+            (3, 2): "south", (3, 3): "south", (3, 4): "south",
             (4, 1): "west", (5, 1): "west",
-            # Низ "4" -> Вниз
             (0, 3): "south", (1, 3): "south", (0, 4): "south", (1, 4): "south",
-            # Хвост "2" -> Вниз
             (5, 3): "south", (6, 3): "south"
         }
 
-        # 4. Главный проход по сетке
         for y in range(h):
             for x in range(w):
                 cell = self.grid.matrix[y][x]
@@ -51,14 +209,12 @@ class OriginShift:
                 if cell.forbidden:
                     continue
 
-                # ВАЖНО: Правый нижний угол — это Сток (Origin)
                 if x == w - 1 and y == h - 1:
                     self.origin = cell
                     cell.vector = None
                     continue
 
                 direction = None
-
                 rel_pos = (x - sx, y - sy)
                 if rel_pos in overrides:
                     desired = overrides[rel_pos]
@@ -81,22 +237,14 @@ class OriginShift:
                     self.origin = cell
                     cell.vector = None
 
-    def _set_vector(self, cell, direction: str):
-        """
-        Устанавливает вектор логически И открывает стены графически.
-        """
+    def _set_vector(self, cell, direction: str) -> None:
         cell.vector = direction
-
         cell.paths[direction] = True
-
         dx, dy = self.deltas[direction]
         neighbor = self.grid.matrix[cell.cell_y + dy][cell.cell_x + dx]
+        neighbor.paths[self.opposites[direction]] = True
 
-        opposite_dir = self.opposites[direction]
-        neighbor.paths[opposite_dir] = True
-
-    def _is_valid_move(self, x, y, direction) -> bool:
-        """Проверка: можно ли из (x,y) шагнуть в direction?"""
+    def _is_valid_move(self, x: int, y: int, direction: str) -> bool:
         dx, dy = self.deltas[direction]
         nx, ny = x + dx, y + dy
         if not (0 <= nx < self.grid.grid_width and 0 <= ny < self.grid.grid_height):
@@ -105,23 +253,14 @@ class OriginShift:
             return False
         return True
 
-    def _close_wall(self, cell, direction: str):
-        """
-        Физически закрывает стену (paths=False) между клеткой и соседом.
-        Используется перед тем, как изменить вектор клетки.
-        """
+    def _close_wall(self, cell, direction: str) -> None:
         cell.paths[direction] = False
-
         dx, dy = self.deltas[direction]
         neighbor = self.grid.matrix[cell.cell_y + dy][cell.cell_x + dx]
-
-        opposite_dir = self.opposites[direction]
-        neighbor.paths[opposite_dir] = False
+        neighbor.paths[self.opposites[direction]] = False
 
     def _get_valid_neighbors(self, cell):
-        """Возвращает список (Cell, direction), к которым можно прокопаться"""
         candidates = []
-
         for direction, (dx, dy) in self.deltas.items():
             nx, ny = cell.cell_x + dx, cell.cell_y + dy
             if 0 <= nx < self.grid.grid_width and 0 <= ny < self.grid.grid_height:
@@ -130,7 +269,7 @@ class OriginShift:
                     candidates.append((neighbor, direction))
         return candidates
 
-    def step(self) -> list:
+    def step(self) -> List[Cell]:
         updates = []
 
         current_origin = self.origin
@@ -144,10 +283,18 @@ class OriginShift:
         target.visited = True
 
         if target.vector:
-            dx, dy = self.deltas[target.vector]
-            old_neighbor = self.grid.matrix[target.cell_y + dy][target.cell_x + dx]
-            self._close_wall(target, target.vector)
-            updates.append(old_neighbor)
+            should_close = True
+
+            # Если лабиринт "брайд" (не идеальный) - делаем петли
+            if hasattr(self.grid, 'perfection') and not self.grid.perfection:
+                if random.random() < 0.05:
+                    should_close = False
+
+            if should_close:
+                dx, dy = self.deltas[target.vector]
+                old_neighbor = self.grid.matrix[target.cell_y + dy][target.cell_x + dx]
+                self._close_wall(target, target.vector)
+                updates.append(old_neighbor)
 
         self._set_vector(current_origin, direction)
         target.vector = None
