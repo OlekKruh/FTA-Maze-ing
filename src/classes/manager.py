@@ -8,7 +8,7 @@ import sys
 import time
 from typing import Tuple, Union, Optional
 
-from .builder import OriginShift, DFSBuilder, PrimBuilder
+from .builder import OriginShift, DFSBuilder, PrimBuilder, KruskalBuilder
 from .generators import GeneratorRegistry
 from .grid import Grid
 from .graphics import Graphics
@@ -38,8 +38,9 @@ class Manager:
                 "origin_shift": OriginShift(self.grid),
                 "dfs_backtracker": DFSBuilder(self.grid),
                 "prim": PrimBuilder(self.grid),
+                "kruskal": KruskalBuilder(self.grid)
             },
-            order=("origin_shift", "dfs_backtracker", "prim")
+            order=("origin_shift", "dfs_backtracker", "prim", "kruskal")
         )
         self.is_path_visible = False
 

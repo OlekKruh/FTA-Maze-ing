@@ -430,3 +430,118 @@ class PrimBuilder(BaseBuilder):
             return None
 
         return random.choice(candidates)
+
+
+class KruskalBuilder(BaseBuilder):
+    """Kruskal generator using Union-Find (step-by-step)."""
+
+    name = "kruskal"
+
+    # щоб не було повторень
+    _EDGES_DIRS = (
+        ("east", (1, 0)),
+        ("south", (0, 1)),
+    )
+
+    def __init__(self, grid: Grid) -> None:
+        super().__init__(grid)
+        self.parent: dict[tuple[int, int], tuple[int, int]] = {}
+        self.rank: dict[tuple[int, int], int] = {}
+        self.edges: List[tuple[tuple[int, int], tuple[int, int], str]] = []
+
+    def setup(self) -> None:
+        """Reset grid, initialize union-find for all non-forbidden cells, build & shuffle edges."""
+        # Скидуємо на початку
+        for row in self.grid.matrix:
+            for cell in row:
+                if cell.forbidden:
+                    continue
+                cell.visited = False
+                cell.is_solution = False
+                cell.vector = None
+                for k in cell.paths:
+                    cell.paths[k] = False
+
+        self.parent = {}
+        self.rank = {}
+        self.edges = []
+
+        # знаходимо вузолб початкові клітинки і даємо рейтинг
+        for y in range(self.grid.grid_height):
+            for x in range(self.grid.grid_width):
+                if self.grid.matrix[y][x].forbidden:
+                    continue
+                c = (x, y)
+                self.parent[c] = c
+                self.rank[c] = 0
+
+        # будуємо стіни де тільки можна між неforbidden
+        for y in range(self.grid.grid_height):
+            for x in range(self.grid.grid_width):
+                if self.grid.matrix[y][x].forbidden:
+                    continue
+                for d, (dx, dy) in self._EDGES_DIRS:
+                    nx, ny = x + dx, y + dy
+                    if 0 <= nx < self.grid.grid_width and 0 <= ny < self.grid.grid_height:
+                        if self.grid.matrix[ny][nx].forbidden:
+                            continue
+                        self.edges.append(((x, y), (nx, ny), d))
+
+        random.shuffle(self.edges)
+
+    def step(self) -> List[Cell]:
+        """Process one edge from the shuffled list and carve if it connects different sets.
+
+        Returns a list of cells that changed visually (for re-render).
+        """
+        while self.edges:
+            a, b, d = self.edges.pop()
+            ra = self._find(a)
+            rb = self._find(b)
+
+            # корені спільні
+            if ra == rb:
+                # "хуліганство"
+                if hasattr(self.grid, "perfection") and not self.grid.perfection:
+                    if random.random() < 0.06:
+                        return self._carve_and_mark(a, b, d)
+                continue
+
+            # можна обєднати і зробити прохід
+            self._union(ra, rb)
+            return self._carve_and_mark(a, b, d)
+
+        return []
+
+    def _find(self, x: tuple[int, int]) -> tuple[int, int]:
+        """Find with path compression."""
+        if self.parent[x] != x:
+            self.parent[x] = self._find(self.parent[x])
+        return self.parent[x]
+
+    def _union(self, a: tuple[int, int], b: tuple[int, int]) -> None:
+        """Union by rank. Expects roots."""
+        if self.rank[a] < self.rank[b]:
+            self.parent[a] = b
+        elif self.rank[a] > self.rank[b]:
+            self.parent[b] = a
+        else:
+            self.parent[b] = a
+            self.rank[a] += 1
+
+    def _carve_and_mark(
+        self, a: tuple[int, int], b: tuple[int, int], d: str
+    ) -> List[Cell]:
+        """Carve passage between a and b, mark them visited, return update cells."""
+        ax, ay = a
+        bx, by = b
+        cell = self.grid.matrix[ay][ax]
+        ncell = self.grid.matrix[by][bx]
+
+        cell.paths[d] = True
+        ncell.paths[self.opposites[d]] = True
+
+        cell.visited = True
+        ncell.visited = True
+
+        return [cell, ncell]
