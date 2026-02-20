@@ -304,3 +304,129 @@ class OriginShift(BaseBuilder):
         updates.append(target)
 
         return updates
+
+
+class PrimBuilder(BaseBuilder):
+    """Randomized Prim generator"""
+
+    name = "prim"
+
+    def __init__(self, grid: Grid) -> None:
+        super().__init__(grid)
+        self.frontier: List[tuple[int, int, int, int, str]] = []
+
+    def setup(self) -> None:
+        start_cell = None
+
+        for row in self.grid.matrix:
+            for cell in row:
+                if cell.forbidden:
+                    continue
+
+                    # обнулення
+                cell.visited = False
+                cell.vector = None
+                cell.is_solution = False
+                # закрити Всі воротаа !
+                for k in cell.paths:
+                    cell.paths[k] = False
+
+                if cell.is_start:
+                    start_cell = cell
+
+        # якщо раптом нема стартової клітинки
+        if not start_cell:
+            for row in self.grid.matrix:
+                for cell in row:
+                    if not cell.forbidden:
+                        start_cell = cell
+                        break
+                if start_cell:
+                    break
+
+        self.frontier = []
+        if start_cell:
+            start_cell.visited = True
+            # починаємо додавати тут можливі проходи(стінки)
+            self._add_frontier(start_cell.cell_x, start_cell.cell_y)
+
+    def step(self) -> List[Cell]:
+        # якщо закінчились можливості куди рости, то Готовченко!
+        while self.frontier:
+            # вся магія рандому
+            idx = random.randrange(len(self.frontier))
+            x, y, px, py, d = self.frontier.pop(idx)
+
+            cell = self.grid.matrix[y][x]
+            parent = self.grid.matrix[py][px]
+
+            if cell.forbidden or cell.visited:
+                continue
+            if parent.forbidden or not parent.visited:
+                # запобіжник, хоча хай буде
+                continue
+
+            updates: List[Cell] = []
+
+            # валим стіну в напрмку d
+            parent.paths[d] = True
+            # валим стіну ту саму з іншого боку
+            cell.paths[self.opposites[d]] = True
+            cell.visited = True
+
+            updates.append(parent)
+            updates.append(cell)
+
+            # Додаємо нового кандидата
+            self._add_frontier(x, y)
+
+            # Хуліганство, смішне слово
+            # пробиваємо додаткову стіну до сусіда
+            if hasattr(self.grid, "perfection") and not self.grid.perfection:
+                if random.random() < 0.08:
+                    loop_target = self._pick_visited_neighbor_without_passage(cell)
+                    if loop_target:
+                        target_cell, direction = loop_target
+                        # пробиваємо стіну (створюємо петлю)
+                        cell.paths[direction] = True
+                        target_cell.paths[self.opposites[direction]] = True
+
+                        # важливо: на оновлення піде й сусід
+                        updates.append(target_cell)
+
+            return updates
+
+        return []
+
+    def _add_frontier(self, x: int, y: int) -> None:
+        # потенційні клітинки додаються тут
+        for d, (dx, dy) in self.deltas.items():
+            nx, ny = x + dx, y + dy  # зміщення
+            # перевірка чи не випали з матриці
+            if not (0 <= nx < self.grid.grid_width and 0 <= ny < self.grid.grid_height):
+                continue
+
+            ncell = self.grid.matrix[ny][nx]  # матриця індексується за у!
+            if ncell.forbidden or ncell.visited:
+                continue
+
+            self.frontier.append((nx, ny, x, y, d))
+
+    def _pick_visited_neighbor_without_passage(self, cell: Cell):
+        candidates = []
+        x, y = cell.cell_x, cell.cell_y
+
+        for d, (dx, dy) in self.deltas.items():
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < self.grid.grid_width and 0 <= ny < self.grid.grid_height:
+                ncell = self.grid.matrix[ny][nx]
+                if ncell.forbidden:
+                    continue
+                # головний критерій відбору
+                if ncell.visited and not cell.paths[d]:
+                    candidates.append((ncell, d))
+
+        if not candidates:
+            return None
+
+        return random.choice(candidates)
