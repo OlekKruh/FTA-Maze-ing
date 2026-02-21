@@ -16,6 +16,7 @@ from .maze_config import MazeConfig
 from .menu import Menu
 from .renderer import Renderer
 from .solver import Solver
+from .writer import MazeWriter
 
 # Type aliases for clarity
 Coord = Tuple[int, int]
@@ -107,6 +108,7 @@ class Manager:
                 self.renderer.draw_cell(cell, delay=0.005)
 
         self.renderer.restore_cursor()
+        self._export_maze_in_background()
 
     def _handle_unknown(self, command: Cmd):
         self._stub_action("Unknown command", command)
@@ -192,3 +194,30 @@ class Manager:
 
         # 3. Перерисовываем UI и лабиринт
         self._update_menu_line_smart(command, redraw_grid=True)
+
+    def _export_maze_in_background(self) -> None:
+        """Silently solves the generated maze and exports it to a file."""
+        start_coord = None
+        exit_coord = None
+
+        # 1. Ищем точки старта и финиша
+        for row in self.grid.matrix:
+            for cell in row:
+                if cell.is_start:
+                    start_coord = (cell.cell_x, cell.cell_y)
+                elif cell.is_exit:
+                    exit_coord = (cell.cell_x, cell.cell_y)
+
+        # 2. Если точки есть, запускаем Солвер для получения строки пути
+        path_dirs = ""
+        if start_coord and exit_coord:
+            solver = Solver(self.grid)
+            result = solver.solve(start_coord, exit_coord)
+            path_dirs = result.path_dirs
+
+        # 3. Передаем всё Писателю (имя файла берем из конфига)
+        MazeWriter.export_to_file(
+            grid=self.grid,
+            path_dirs=path_dirs,
+            filename=self.config.output_file_name
+        )

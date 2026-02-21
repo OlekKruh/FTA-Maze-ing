@@ -22,8 +22,8 @@ class Menu:
     CMD_CHAR_STYLE = 3
     CMD_CHANGE_COLORS = 4
     CMD_CHANGE_GENERATOR = 5
-    CMD_OPEN_MLX = 6
-    CMD_EXIT = 7
+    # CMD_OPEN_MLX = 6
+    CMD_EXIT = 6
 
     def __init__(self) -> None:
         """Initializes the Menu instance."""
@@ -119,7 +119,7 @@ class Menu:
             self.get_char_style_btn_text(char_style),
             self.get_color_style_btn_text(color_style),
             self.get_generator_btn_text(gen_name),
-            self.get_mlx_btn_text(),
+            # self.get_mlx_btn_text(),
             self.get_exit_btn_text(),
             self.get_choice(),
         ]

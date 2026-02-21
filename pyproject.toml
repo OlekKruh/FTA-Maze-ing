@@ -1,13 +1,16 @@
 [tool.poetry]
-name = "A-Maze-ing"
-version = "0.1"
+name = "mazegen"
+version = "1.0.0"
 description = "A labyrinth is not a place to be lost, but a path to be found."
 authors = [
     "ndemkiv <ndemkiv@student.42warsaw.pl>",
     "okruhlia <okruhlia@student.42warsaw.pl>"
 ]
 readme = "README.md"
-package-mode = false
+# Убрали package-mode = false
+packages = [
+    { include = "mazegen", from = "src" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.10"

@@ -3,8 +3,8 @@ PIP         = pip
 VENV        = .venv
 BIN         = $(VENV)/bin
 
-MAIN        = a_maze_ing.py
-CONFIG      = config.txt
+MAIN        = src/a_maze_ing.py
+CONFIG      = src/config.txt
 
 FLAKE8      = flake8
 MYPY        = mypy
@@ -25,7 +25,8 @@ install:
 
 # mazegen package
 build:
-	$(BIN)/$(PYTHON) setup.py sdist bdist_wheel
+	$(BIN)/$(PIP) install build
+	$(BIN)/$(PYTHON) -m build
 	mv dist/*.whl .
 	mv dist/*.tar.gz .
 	rm -rf dist build *.egg-info
@@ -40,6 +41,7 @@ clean:
 	rm -rf $(VENV)
 	rm -rf .mypy_cache
 	rm -rf build dist *.egg-info
+	rm -f *.whl *.tar.gz
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete
 

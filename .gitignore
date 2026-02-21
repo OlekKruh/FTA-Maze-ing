@@ -1,5 +1,7 @@
 # Files
 .env
+.DS_Store
+src/.DS_Store
 
 # Derectoris
 .venv/
