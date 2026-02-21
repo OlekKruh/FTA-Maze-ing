@@ -168,6 +168,12 @@ class MazeConfig:
 
         width: int = data["maze_width"]
         height: int = data["maze_height"]
+
+        if width < 3 or height < 3:
+            print(f"Validation error: Maze dimensions must"
+                  f" be at least 3x3. Got {width}x{height}.")
+            return False
+
         entry: List[int] = data["maze_entry"]
         exit_pt: List[int] = data["maze_exit"]
 
