@@ -66,7 +66,7 @@ class Manager:
         )
         self.is_path_visible: bool = False
 
-    def run(self):
+    def run(self) -> None:
         """Starts the main application loop.
 
         Renders the initial screen and enters an infinite loop to process

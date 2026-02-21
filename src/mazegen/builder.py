@@ -234,7 +234,7 @@ class OriginShift(BaseBuilder):
 
         for y in range(h):
             for x in range(w):
-                cell: Cell = self.grid.matrix[y][x]
+                cell = self.grid.matrix[y][x]
 
                 if cell.forbidden:
                     continue

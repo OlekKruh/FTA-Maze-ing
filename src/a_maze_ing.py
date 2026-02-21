@@ -14,7 +14,7 @@ from mazegen import MazeConfig, Manager
 BASE_DIR = Path(__file__).resolve().parent
 
 
-def main():
+def main() -> None:
     """
     Execute the main application flow.
 
