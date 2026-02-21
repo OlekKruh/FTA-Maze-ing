@@ -2,17 +2,18 @@
 Defines the grid structure for the maze.
 """
 
+from typing import List, Tuple
+
 from .cell import Cell
 from .maze_config import MazeConfig
-from typing import List, Tuple
 
 
 class Grid:
     """Represents the 2D map of the maze.
 
     This class manages the collection of Cell objects,
-    handles coordinate systems,
-    defines boundaries, and manages special zones (like the start, exit, and
+    handles coordinate systems, defines boundaries,
+    and manages special zones (like the start, exit, and
     forbidden areas).
 
     Attributes:
@@ -23,7 +24,6 @@ class Grid:
         perfection (bool): Indicates if the maze should be perfect (no loops)
             or imperfect (braid).
     """
-    matrix = []
 
     def __init__(self, config: MazeConfig) -> None:
         """Initializes the Grid based on the provided configuration.
@@ -38,7 +38,6 @@ class Grid:
         self.grid_width: int = config.maze_width
         self.grid_height: int = config.maze_height
 
-        # Initialize matrix: rows (y) of columns (x)
         self.matrix: List[List[Cell]] = [
             [Cell(x, y) for x in range(self.grid_width)]
             for y in range(self.grid_height)
@@ -47,9 +46,6 @@ class Grid:
         start_x, start_y = config.maze_entry
         exit_x, exit_y = config.maze_exit
 
-        # Validate and set Start/Exit flags
-        # Note: We assume config coordinates are within bounds
-        # based on config validation
         self.matrix[start_y][start_x].is_start = True
         self.matrix[exit_y][exit_x].is_exit = True
 
@@ -76,7 +72,7 @@ class Grid:
         """Returns a concise string representation of the grid dimensions.
 
         Returns:
-            str: A formatted string like "Grid = 20x20\nCells = 400".
+            str: A formatted string like "Grid = 20x20\\nCells = 400".
         """
         return (f"Grid = {self.grid_width}x{self.grid_height}\n"
                 f"Cells = {self.grid_width * self.grid_height}")
@@ -95,10 +91,9 @@ class Grid:
             List[Cell]: A list of adjacent Cell objects.
         """
         x, y = item
-        neighbors = []
+        neighbors: List[Cell] = []
 
-        # Deltas: (dx, dy) -> North, South, East, West
-        direction = [(0, -1), (1, 0), (0, 1), (-1, 0)]
+        direction: List[Tuple[int, int]] = [(0, -1), (1, 0), (0, 1), (-1, 0)]
 
         for dx, dy in direction:
             nx, ny = x + dx, y + dy
@@ -126,7 +121,7 @@ class Grid:
         If the grid is too small to contain the mask (plus a 1-cell border),
         the operation is skipped.
         """
-        mask = [
+        mask: List[str] = [
             "x...xxx",
             "x.x...x",
             "xxx.xxx",
@@ -134,25 +129,22 @@ class Grid:
             "..x.xxx"
         ]
 
-        mask_height = len(mask)  # 5
-        mask_width = len(mask[0])  # 7
+        mask_height: int = len(mask)
+        mask_width: int = len(mask[0])
 
-        # Ensure there is at least 1 cell padding around the mask
         if (self.grid_width < mask_width + 2 or
                 self.grid_height < mask_height + 2):
             return
 
-        start_x = (self.grid_width - mask_width) // 2
-        start_y = (self.grid_height - mask_height) // 2
+        start_x: int = (self.grid_width - mask_width) // 2
+        start_y: int = (self.grid_height - mask_height) // 2
 
         for row_idx, line in enumerate(mask):
             for col_idx, char in enumerate(line):
                 if char == 'x':
-                    grid_x = start_x + col_idx
-                    grid_y = start_y + row_idx
+                    grid_x: int = start_x + col_idx
+                    grid_y: int = start_y + row_idx
 
-                    cell = self.matrix[grid_y][grid_x]
+                    cell: Cell = self.matrix[grid_y][grid_x]
                     cell.forbidden = True
-                    # Marking as visited ensures algorithms
-                    # don't try to process it
                     cell.visited = True

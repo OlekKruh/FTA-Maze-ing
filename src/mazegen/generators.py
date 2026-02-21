@@ -1,5 +1,6 @@
 """
-Registry for managing and switching between different maze generation algorithms.
+Registry for managing and switching between different maze
+generation algorithms.
 """
 
 from typing import Dict, Tuple
@@ -15,7 +16,8 @@ class GeneratorRegistry:
     internal implementations.
 
     Attributes:
-        _generators (Dict[str, BaseBuilder]): Dictionary of instantiated algorithms.
+        _generators (Dict[str, BaseBuilder]): Dictionary of
+            instantiated algorithms.
         _order (Tuple[str, ...]): The sequence in which algorithms are cycled.
         _idx (int): The index of the currently active algorithm.
     """
@@ -25,14 +27,14 @@ class GeneratorRegistry:
         """Initializes the registry with available generators.
 
         Args:
-            generators (Dict[str, BaseBuilder]): A dictionary mapping string keys
-                to instantiated builder objects.
+            generators (Dict[str, BaseBuilder]): A dictionary
+                mapping string keys to instantiated builder objects.
             order (Tuple[str, ...]): A tuple defining the cycle order
                 of the generators.
         """
-        self._generators = generators
-        self._order = order
-        self._idx = 0
+        self._generators: Dict[str, BaseBuilder] = generators
+        self._order: Tuple[str, ...] = order
+        self._idx: int = 0
 
     def current(self) -> BaseBuilder:
         """Returns the currently active generator instance.

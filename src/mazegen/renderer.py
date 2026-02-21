@@ -2,14 +2,11 @@
 Handles all terminal output and visual rendering logic.
 """
 
-import random
-import sys
-import time
-
 from .grid import Grid
 from .cell import Cell
 from .menu import Menu
 from .graphics import Graphics
+from typing import List
 import random
 import time
 import sys
@@ -33,23 +30,22 @@ class Renderer:
             grafix_module (Graphics): Instance handling visual styles.
             menu_module (Menu): Instance handling menu text logic.
         """
-        self.gfx = grafix_module
-        self.menu = menu_module
+        self.gfx: Graphics = grafix_module
+        self.menu: Menu = menu_module
 
     @staticmethod
     def clear_screen() -> None:
         """Clears the entire terminal screen and moves cursor to home (0,0).
 
-        Uses ANSI escape codes: \033[2J (clear entire screen)
-        and \033[H (home).
+        Uses ANSI escape codes: \\033[2J (clear entire screen)
+        and \\033[H (home).
         """
         sys.stdout.write("\033[2J\033[H")
         sys.stdout.flush()
 
     @staticmethod
     def hide_cursor() -> None:
-        """Hides the terminal cursor to prevent flickering during rendering.
-        """
+        """Hides the terminal cursor to prevent flickering during rendering."""
         sys.stdout.write("\033[?25l")
         sys.stdout.flush()
 
@@ -82,8 +78,8 @@ class Renderer:
         sys.stdout.write(f"\033[{y};{x}H")
 
     @staticmethod
-    def type_text(text: str, min_delay: float = 0.04,
-                  max_delay: float = 0.06) -> None:
+    def type_text(text: str, min_delay: float = 0.01,
+                  max_delay: float = 0.04) -> None:
         """Prints text character by character to simulate typing.
 
         Args:
@@ -97,8 +93,8 @@ class Renderer:
             time.sleep(random.uniform(min_delay, max_delay))
 
     @staticmethod
-    def backspace(count: int, min_delay: float = 0.04,
-                  max_delay: float = 0.09) -> None:
+    def backspace(count: int, min_delay: float = 0.01,
+                  max_delay: float = 0.04) -> None:
         """Simulates pressing backspace to erase characters.
 
         Args:
@@ -120,15 +116,15 @@ class Renderer:
         Args:
             cell (Cell): The cell object to draw.
             delay (float): Optional pause after drawing
-            (for animation effects).
+                (for animation effects).
         """
         # Convert 0-based grid coordinates to 1-based terminal coordinates
-        screen_y = cell.cell_y + 1
-        screen_x = cell.cell_x + 1
+        screen_y: int = cell.cell_y + 1
+        screen_x: int = cell.cell_x + 1
 
-        char = self.gfx.get_char_for_cell(cell)
-        color = self.gfx.get_color_for_cell(cell)
-        reset = self.gfx.current_theme_map["RESET"]
+        char: str = self.gfx.get_char_for_cell(cell)
+        color: str = self.gfx.get_color_for_cell(cell)
+        reset: str = self.gfx.current_theme_map["RESET"]
 
         self.move_cursor(screen_x, screen_y)
         sys.stdout.write(f"{color}{char}{reset}")
@@ -147,7 +143,7 @@ class Renderer:
         self.hide_cursor()
         for row in grid.matrix:
             for cell in row:
-                self.draw_cell(cell, 0)
+                self.draw_cell(cell, 0.0)
         self.show_cursor()
 
     def update_menu_line(self,
@@ -161,24 +157,34 @@ class Renderer:
             line_index (int): The index of the menu line to update.
             gen_name (str): The name of the currently active generator.
         """
-        current_y = maze_height + 2 + line_index
+        current_y: int = maze_height + 2 + line_index
 
-        menu_list = self.menu.get_current_list(
+        menu_list: List[str] = self.menu.get_current_list(
             path_visible=self.gfx.show_path,
             char_style=self.gfx.current_style_name,
             color_style=self.gfx.current_theme_name,
             gen_name=gen_name
         )
-        text = menu_list[line_index]
+        text: str = menu_list[line_index]
+
         self.move_cursor(1, current_y)
         sys.stdout.write("\033[K")
         self.type_text(text)
         sys.stdout.flush()
 
-    def render_all(self, grid: Grid, gen_name: str):
+    def render_all(self, grid: Grid, gen_name: str) -> None:
+        """Renders the complete initial state of the application.
+
+        Clears the screen, draws the entire maze grid, and then prints
+        the interactive menu below it.
+
+        Args:
+            grid (Grid): The grid object to be rendered.
+            gen_name (str): The name of the currently active generator.
+        """
         self.clear_screen()
 
-        menu_list = self.menu.get_current_list(
+        menu_list: List[str] = self.menu.get_current_list(
             path_visible=self.gfx.show_path,
             char_style=self.gfx.current_style_name,
             color_style=self.gfx.current_theme_name,

@@ -2,7 +2,6 @@
 Manages the text content and user input for the application menu.
 """
 
-from __future__ import annotations
 from typing import List, Union
 
 
@@ -15,15 +14,15 @@ class Menu:
     into command IDs.
 
     Attributes:
+        title (str): The main title of the application.
         menu_list (List[str]): Caches the current list of menu strings.
     """
-    CMD_GENERATE_NEW = 1
-    CMD_SHOW_PATH = 2
-    CMD_CHAR_STYLE = 3
-    CMD_CHANGE_COLORS = 4
-    CMD_CHANGE_GENERATOR = 5
-    # CMD_OPEN_MLX = 6
-    CMD_EXIT = 6
+    CMD_GENERATE_NEW: int = 1
+    CMD_SHOW_PATH: int = 2
+    CMD_CHAR_STYLE: int = 3
+    CMD_CHANGE_COLORS: int = 4
+    CMD_CHANGE_GENERATOR: int = 5
+    CMD_EXIT: int = 6
 
     def __init__(self) -> None:
         """Initializes the Menu instance."""
@@ -35,17 +34,17 @@ class Menu:
         """Reads and parses the user's input from the console.
 
         Attempts to convert the input into a command ID (int).
-        If the input is a number within the valid range of commands (1-7),
+        If the input is a number within the valid range of commands (1-6),
         it returns the integer. Otherwise, it returns the raw string.
 
         Returns:
             Union[int, str]: The command ID if valid, or the raw input string.
         """
-        choice = input("").strip()
+        choice: str = input("").strip()
         if choice.isdigit():
-            cmd = int(choice)
+            cmd: int = int(choice)
             # Check if the number corresponds to a known command constant
-            if 1 <= cmd <= 7:
+            if 1 <= cmd <= 6:
                 return cmd
         return str(choice)
 
@@ -71,7 +70,7 @@ class Menu:
         Returns:
             str: Dynamic text (e.g., "Show path" or "Hide path").
         """
-        path_action = "Hide" if is_path_visible else "Show"
+        path_action: str = "Hide" if is_path_visible else "Show"
         return f"[{self.CMD_SHOW_PATH}] {path_action} path"
 
     def get_char_style_btn_text(self, char_style: str) -> str:
@@ -88,10 +87,6 @@ class Menu:
         """Returns the text for changing the generator algorithm."""
         return (f"[{self.CMD_CHANGE_GENERATOR}] "
                 f"Change generator. Now: ({gen_name})")
-
-    def get_mlx_btn_text(self) -> str:
-        """Returns the text for opening the graphical MLX view."""
-        return f"[{self.CMD_OPEN_MLX}] Open MLX view (from maze.txt)"
 
     def get_exit_btn_text(self) -> str:
         """Returns the text for the exit option."""
@@ -119,7 +114,6 @@ class Menu:
             self.get_char_style_btn_text(char_style),
             self.get_color_style_btn_text(color_style),
             self.get_generator_btn_text(gen_name),
-            # self.get_mlx_btn_text(),
             self.get_exit_btn_text(),
             self.get_choice(),
         ]
@@ -127,4 +121,5 @@ class Menu:
 
     @staticmethod
     def _show_error(message: str) -> None:
+        """Prints a standardized error message to the console."""
         print(f">>> ERROR: {message} <<<")
