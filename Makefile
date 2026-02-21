@@ -46,9 +46,9 @@ clean:
 	find . -type f -name "*.pyc" -delete
 
 lint:
-	$(BIN)/$(FLAKE8) . --exclude=$(VENV)
-	$(BIN)/$(MYPY) . --exclude $(VENV) $(MYPY_FLAGS)
+	$(BIN)/$(FLAKE8) src/
+	$(BIN)/$(MYPY) src/ $(MYPY_FLAGS)
 
 lint-strict:
-	$(BIN)/$(FLAKE8) . --exclude=$(VENV)
-	$(BIN)/$(MYPY) . --exclude $(VENV) --strict
+	$(BIN)/$(FLAKE8) src/
+	$(BIN)/$(MYPY) src/ --strict
